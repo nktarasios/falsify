@@ -1,0 +1,11 @@
+# Optional per-case source config. Absent file = DuckDB over data/*.csv (default).
+# Spec: docs/SPEC.md CS-4, DB-3, DB-4.
+
+# Read-only Postgres (only if the client offered credentials; CSVs are fine for v0):
+# dsn: "postgresql://readonly_user@host:5432/dbname"
+
+# Declared analysis windows — consumed by the guard's date-window check (G-6).
+# Keep in sync with intake.md.
+windows:
+  focus: ["YYYY-MM-DD", "YYYY-MM-DD"]
+  baseline: ["YYYY-MM-DD", "YYYY-MM-DD"]

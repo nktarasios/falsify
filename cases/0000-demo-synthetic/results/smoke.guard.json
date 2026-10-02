@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "case": "0000-demo-synthetic",
+  "sqlfile": "queries/smoke.sql",
+  "sql": "SELECT platform, count(*) AS n\nFROM events\nWHERE event_ts BETWEEN '2025-03-01' AND '2025-04-30'\nGROUP BY platform\n",
+  "dialect": "duckdb",
+  "executed_at": "2026-08-14T04:31:59.667698+00:00",
+  "row_count": 3,
+  "columns": [
+    {
+      "name": "platform",
+      "dtype": "str"
+    },
+    {
+      "name": "n",
+      "dtype": "int64"
+    }
+  ],
+  "source_row_counts": {
+    "events": 93574
+  },
+  "checks": [
+    {
+      "id": "G-1",
+      "name": "single-statement",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-2",
+      "name": "select-only",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-3",
+      "name": "no-write-nodes",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-4",
+      "name": "no-star-projection",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-5",
+      "name": "redaction",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-6",
+      "name": "window-coverage",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-7",
+      "name": "join-fanout",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-8",
+      "name": "aggregate-floor",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-9",
+      "name": "nulls",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-12",
+      "name": "size",
+      "status": "pass",
+      "detail": ""
+    }
+  ],
+  "status": "pass"
+}

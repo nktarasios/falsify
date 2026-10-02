@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "falsify-workbench"
+version = "0.1.0"
+description = "Falsify Labs concierge engine: local, single-operator falsification-analysis harness"
+requires-python = ">=3.12"
+# Full dependency set per docs/SPEC.md section 4. Adding ANYTHING else requires
+# asking the operator first (constitution / working agreements).
+dependencies = [
+    "duckdb>=1.0",
+    "sqlglot>=25.0",
+    "psycopg[binary]>=3.2",
+    "pandas>=2.2",
+    "statsmodels>=0.14",
+    "jinja2>=3.1",
+    "pytest>=8.0",
+    "pyyaml>=6.0",
+]
+
+[tool.setuptools]
+packages = ["core", "seeds", "evals"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

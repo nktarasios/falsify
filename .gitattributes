@@ -1,0 +1,4 @@
+# Determinism across machines (SPEC §4): everything text is LF in the repo.
+* text=auto eol=lf
+*.png binary
+*.duckdb binary

@@ -1,0 +1,19 @@
+# Environments / caches
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Local databases (always rebuilt from CSVs or seeds)
+*.duckdb
+*.duckdb.wal
+
+# Raw client data never enters git. Everything derived from it that the report
+# cites (queries/, results/*.csv aggregates, results/*.guard.json, markdown)
+# IS committed — that is the case record.
+cases/*/data/
+
+# OS noise
+.DS_Store
+Thumbs.db
