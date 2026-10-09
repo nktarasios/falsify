@@ -114,6 +114,9 @@ def score_scenario(scenario_path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
+    # Windows consoles default to cp1252, which cannot print the score marks.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     paths = sorted(p for p in SCENARIOS_DIR.glob("*.yaml") if p.is_file())
     if not paths:
         print("0 scenarios")

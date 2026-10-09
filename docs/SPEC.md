@@ -496,6 +496,11 @@ citing the iOS-vs-Android contrast. Scored outcome saved as
 
 ## 14. Changelog
 
+- **2026-10-09** fixes from the first end-to-end demo run — the smoke query
+  (DM-9) and the db-run happy-path test now `ORDER BY platform`. DuckDB GROUP BY
+  order is not stable, so the test failed about 2 runs in 3 and smoke.csv row order
+  changed between `make demo` runs. `make eval` forces UTF-8 stdout so the EV-5 score marks
+  print on a Windows cp1252 console instead of crashing.
 - **2026-08-14** G-13 sharpened — a check that cannot run is listed as an
   **error** naming what blocked it, never omitted and never reported as `pass`.
   `check_statement` now emits G-2..G-4 as unrun-errors when G-1's parse fails

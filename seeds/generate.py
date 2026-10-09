@@ -240,6 +240,7 @@ _SMOKE_SQL = (
     "FROM events\n"
     "WHERE event_ts BETWEEN '2025-03-01' AND '2025-04-30'\n"
     "GROUP BY platform\n"
+    "ORDER BY platform\n"
 )
 _INTAKE = f"""# Intake — demo / synthetic
 
