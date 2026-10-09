@@ -1,0 +1,5 @@
+win,channel,n_days,total_spend,mean_daily_spend
+baseline,paid_search,30,36000.0,1200.0
+focus,paid_search,30,30720.0,1024.0
+baseline,paid_social,30,24000.0,800.0
+focus,paid_social,30,20480.0,682.6666666666666

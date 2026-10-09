@@ -1,0 +1,12 @@
+id: "0001-demo"
+case: "demo-run-2026-10-09"
+ground_truth: "ios-client 5.2.0 on 2025-04-05 renamed the iOS retention event session_start to session_started; real retention never moved (SPEC DM-4, DM-5)."
+matching_hypothesis: "H1"
+distractors: ["H-prior", "H4"]
+data: {kind: generated, cmd: "make demo"}
+expected_verdicts:
+  H1: [SURVIVED]
+  H2: [KILLED, UNDERPOWERED]
+  H3: [KILLED, UNDERPOWERED]
+  H4: [KILLED]
+  H-prior: [KILLED]

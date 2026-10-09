@@ -1,0 +1,353 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Falsify report — demo (synthetic) / demo-run-2026-10-09</title>
+<style>
+  :root { --ink:#1a1d21; --muted:#5c6570; --line:#d9dee3; --bg:#ffffff;
+          --killed:#8a1f11; --survived:#0b5d1e; --underpowered:#7a5a00; }
+  body { font:15px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+         color:var(--ink); background:var(--bg); max-width:60rem;
+         margin:2rem auto; padding:0 1.25rem; }
+  h1,h2,h3 { line-height:1.25; margin:1.6em 0 .5em; }
+  h1 { font-size:1.5rem; border-bottom:2px solid var(--ink); padding-bottom:.35rem; }
+  h2 { font-size:1.2rem; }
+  table { border-collapse:collapse; margin:.75rem 0; width:100%; font-size:.92em; }
+  th,td { border:1px solid var(--line); padding:.35rem .55rem; text-align:left;
+          vertical-align:top; }
+  th { background:#f2f4f6; }
+  code, pre { font-family:ui-monospace, Consolas, monospace; font-size:.9em; }
+  pre { background:#f6f8fa; border:1px solid var(--line); padding:.7rem;
+        overflow-x:auto; }
+  blockquote { border-left:3px solid var(--line); margin:.75rem 0;
+               padding:.1rem .9rem; color:var(--muted); }
+  .verdict-KILLED { color:var(--killed); font-weight:600; }
+  .verdict-SURVIVED { color:var(--survived); font-weight:600; }
+  .verdict-UNDERPOWERED { color:var(--underpowered); font-weight:600; }
+  .guard-pass { color:var(--survived); }
+  .guard-warn { color:var(--underpowered); }
+  .guard-error { color:var(--killed); font-weight:600; }
+  .meta { color:var(--muted); font-size:.85em; }
+  .truncated { color:var(--muted); font-style:italic; }
+</style>
+</head>
+<body>
+<p class="meta">Falsify Labs · case demo-run-2026-10-09 · generated 2026-10-09T23:26:25.311284+00:00</p>
+
+
+<table>
+  <tr><th>hypothesis</th><th>verdict</th></tr>
+  
+  <tr><td>H1</td><td class="verdict-SURVIVED">SURVIVED</td></tr>
+  
+  <tr><td>H2</td><td class="verdict-UNDERPOWERED">UNDERPOWERED</td></tr>
+  
+  <tr><td>H3</td><td class="verdict-UNDERPOWERED">UNDERPOWERED</td></tr>
+  
+  <tr><td>H4</td><td class="verdict-KILLED">KILLED</td></tr>
+  
+  <tr><td>H-prior</td><td class="verdict-UNDERPOWERED">UNDERPOWERED</td></tr>
+  
+</table>
+
+
+<h1>Falsify report — demo (synthetic) / demo-run-2026-10-09</h1>
+<h2>Answer</h2>
+<p>The D7 retention drop (31.3% to 23.5%, −7.8 pp) is consistent with a logging change, not a change in user behavior. On 2025-04-05 the iOS client began logging <code>session_started</code> instead of <code>session_start</code>, and the metric counts only the old name. Among Android and web users, D7 retention did not fall (31.2% to 32.3%, p = 0.11). The paid-marketing explanation was KILLED: paid spend fell 14.7% in the focus window. The client's suspicion, that the pricing flag lowered retention, is UNDERPOWERED: retention rose after the flip on both Android (+2.6 pp, p = 0.025) and web (+0.8 pp, p = 0.73), but the web sample had only 28% power to detect a 3 pp harm. Mix shift and the Android 3.8.1 release are UNDERPOWERED.</p>
+<h2>Killed</h2>
+<table><thead><tr><th>hypothesis</th><th>kill condition (pre-registered)</th><th>evidence</th><th>numbers</th></tr></thead><tbody><tr><td>H4 paid-marketing push</td><td>mean daily spend changes &lt; 20% between windows</td><td>h4_spend</td><td>$2,000 → $1,706.67 per day (−14.7%)</td></tr></tbody></table>
+<h2>Survivors</h2>
+<ul><li>H1 measurement artifact. iOS <code>session_start</code> index fell by 0.99 relative to Android+web (DiD t = −28.2, p ≈ 1e−174), and the iOS event name changed on 2025-04-05. Consistent with the whole drop being a renamed event. Effect: iOS D7 31.6% → 3.3% on the uncorrected metric.</li></ul>
+<h2>Underpowered</h2>
+<ul><li>H-prior pricing_page_v2: web POST − PRE +0.8 pp (p = 0.73, power 0.28 at 3 pp). Settled by about 3,000 web users per arm.</li><li>H2 mix shift: no drop on the corrected metric, so the pre-registered "share of drop explained" is undefined. Re-weighting moves the focus rate by under 0.1 pp.</li><li>H3 android-client 3.8.1: DiD −3.0 pp vs web, p = 0.079, CI half-width 3.3 pp. Web rose rather than Android falling. Settled by roughly doubling web cohort volume.</li></ul>
+<h2>What would change this conclusion</h2>
+<ul><li>Evidence that iOS 5.2.0 also shipped a user-facing regression, hidden by the rename.</li><li>A web-only pricing test with about 3,000 users per arm showing a drop of 3 pp or more.</li></ul>
+
+<h2>Appendix — queries &amp; guard reports</h2>
+
+<h3><code>h1_event_names.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>SELECT platform, event_name,
+       CASE WHEN event_ts &lt; TIMESTAMP &#39;2025-04-05&#39; THEN &#39;before&#39; ELSE &#39;on_after&#39; END AS side,
+       count(*) AS n
+FROM events
+WHERE event_ts &gt;= TIMESTAMP &#39;2025-03-22&#39; AND event_ts &lt; TIMESTAMP &#39;2025-04-22&#39;
+GROUP BY 1, 2, 3
+ORDER BY 1, 2, 3
+</pre>
+<p class="meta">rows: 24 · result: results/h1_event_names.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>h1_ios_rename_day.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>SELECT CAST(event_ts AS DATE) AS day, event_name, count(*) AS n
+FROM events
+WHERE platform = &#39;ios&#39; AND event_name IN (&#39;session_start&#39;, &#39;session_started&#39;)
+  AND event_ts &gt;= TIMESTAMP &#39;2025-03-23&#39; AND event_ts &lt; TIMESTAMP &#39;2025-04-22&#39;
+GROUP BY 1, 2 ORDER BY 1, 2
+</pre>
+<p class="meta">rows: 30 · result: results/h1_ios_rename_day.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>h1_ios_session_index.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH daily AS (
+  SELECT CAST(event_ts AS DATE) AS day,
+         CASE WHEN platform = &#39;ios&#39; THEN 1 ELSE 0 END AS is_ios,
+         count(*) AS n
+  FROM events
+  WHERE event_name = &#39;session_start&#39;
+    AND event_ts &gt;= TIMESTAMP &#39;2025-03-22&#39; AND event_ts &lt; TIMESTAMP &#39;2025-04-22&#39;
+  GROUP BY 1, 2
+),
+pre AS (
+  SELECT is_ios, avg(n) AS pre_mean FROM daily
+  WHERE day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-04&#39; GROUP BY is_ios
+)
+SELECT d.day, d.is_ios, d.n, d.n / p.pre_mean AS idx,
+       CASE WHEN d.day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-04&#39; THEN 0
+            WHEN d.day BETWEEN DATE &#39;2025-04-05&#39; AND DATE &#39;2025-04-18&#39; THEN 1 END AS post
+FROM daily d JOIN pre p ON p.is_ios = d.is_ios
+WHERE d.day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-21&#39;
+ORDER BY d.day, d.is_ios
+</pre>
+<p class="meta">rows: 45 · result: results/h1_ios_session_index.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>h1_ios_session_index_v2.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH grid AS (
+  SELECT CAST(d AS DATE) AS day, g.is_ios
+  FROM range(TIMESTAMP &#39;2025-03-22&#39;, TIMESTAMP &#39;2025-04-22&#39;, INTERVAL 1 DAY) t(d)
+  CROSS JOIN (SELECT 0 AS is_ios UNION ALL SELECT 1) g
+),
+daily AS (
+  SELECT CAST(event_ts AS DATE) AS day,
+         CASE WHEN platform = &#39;ios&#39; THEN 1 ELSE 0 END AS is_ios,
+         count(*) AS n_sessions
+  FROM events
+  WHERE event_name = &#39;session_start&#39;
+    AND event_ts &gt;= TIMESTAMP &#39;2025-03-22&#39; AND event_ts &lt; TIMESTAMP &#39;2025-04-22&#39;
+  GROUP BY 1, 2
+),
+filled AS (
+  SELECT g.day, g.is_ios, coalesce(d.n_sessions, 0) AS n_sessions
+  FROM grid g LEFT JOIN daily d ON d.day = g.day AND d.is_ios = g.is_ios
+),
+pre AS (
+  SELECT is_ios, avg(n_sessions) AS pre_mean FROM filled
+  WHERE day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-04&#39; GROUP BY is_ios
+)
+SELECT f.day, f.is_ios, f.n_sessions, f.n_sessions / p.pre_mean AS idx,
+       CASE WHEN f.day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-04&#39; THEN 0
+            WHEN f.day BETWEEN DATE &#39;2025-04-05&#39; AND DATE &#39;2025-04-18&#39; THEN 1 END AS post
+FROM filled f JOIN pre p ON p.is_ios = f.is_ios
+WHERE f.day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-21&#39;
+ORDER BY f.day, f.is_ios
+</pre>
+<p class="meta">rows: 62 · result: results/h1_ios_session_index_v2.csv
+ · flagged: unbounded-window, underpowered-risk</p>
+
+<h3><code>h1_ios_session_index_v3.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH grid AS (
+  SELECT CAST(d AS DATE) AS day, g.is_ios
+  FROM range(TIMESTAMP &#39;2025-03-22&#39;, TIMESTAMP &#39;2025-04-22&#39;, INTERVAL 1 DAY) t(d)
+  CROSS JOIN (SELECT 0 AS is_ios UNION ALL SELECT 1) g
+),
+daily AS (
+  SELECT CAST(event_ts AS DATE) AS day,
+         CASE WHEN platform = &#39;ios&#39; THEN 1 ELSE 0 END AS is_ios,
+         count(*) AS n_sessions
+  FROM events
+  WHERE event_name = &#39;session_start&#39;
+    AND event_ts &gt;= TIMESTAMP &#39;2025-03-22&#39; AND event_ts &lt; TIMESTAMP &#39;2025-04-22&#39;
+  GROUP BY 1, 2
+),
+filled AS (
+  SELECT g.day, g.is_ios, coalesce(d.n_sessions, 0) AS n_sessions
+  FROM grid g LEFT JOIN daily d ON d.day = g.day AND d.is_ios = g.is_ios
+),
+pre AS (
+  SELECT is_ios, avg(n_sessions) AS pre_mean FROM filled
+  WHERE day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-04&#39; GROUP BY is_ios
+)
+SELECT f.day, f.is_ios, f.n_sessions, f.n_sessions / p.pre_mean AS idx,
+       CASE WHEN f.day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-04&#39; THEN 0
+            WHEN f.day BETWEEN DATE &#39;2025-04-05&#39; AND DATE &#39;2025-04-18&#39; THEN 1 END AS post
+FROM filled f JOIN pre p ON p.is_ios = f.is_ios
+WHERE f.day BETWEEN DATE &#39;2025-03-22&#39; AND DATE &#39;2025-04-18&#39;
+ORDER BY f.day, f.is_ios
+</pre>
+<p class="meta">rows: 56 · result: results/h1_ios_session_index_v3.csv
+ · flagged: unbounded-window, underpowered-risk</p>
+
+<h3><code>h2_mix_acquisition_source.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source,
+    CASE WHEN u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+         WHEN u.signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source
+)
+SELECT win, acquisition_source AS segment, count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate
+FROM ret WHERE win IS NOT NULL AND platform &lt;&gt; &#39;ios&#39; GROUP BY win, acquisition_source ORDER BY segment, win
+</pre>
+<p class="meta">rows: 8 · result: results/h2_mix_acquisition_source.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>h2_mix_country.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source,
+    CASE WHEN u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+         WHEN u.signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source
+)
+SELECT win, country AS segment, count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate
+FROM ret WHERE win IS NOT NULL AND platform &lt;&gt; &#39;ios&#39; GROUP BY win, country ORDER BY segment, win
+</pre>
+<p class="meta">rows: 10 · result: results/h2_mix_country.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>h2_mix_platform.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source,
+    CASE WHEN u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+         WHEN u.signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source
+)
+SELECT win, platform AS segment, count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate
+FROM ret WHERE win IS NOT NULL AND platform &lt;&gt; &#39;ios&#39; GROUP BY win, platform ORDER BY segment, win
+</pre>
+<p class="meta">rows: 4 · result: results/h2_mix_platform.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>h3_android_did.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date, u.platform, u.acquisition_source,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date, u.platform, u.acquisition_source
+)
+SELECT signup_date,
+       CASE WHEN platform = &#39;android&#39; THEN 1 ELSE 0 END AS is_android,
+       CASE WHEN signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN 1 ELSE 0 END AS focus,
+       count(*) AS n, avg(d7) AS d7_rate
+FROM ret
+WHERE platform IN (&#39;android&#39;, &#39;web&#39;)
+  AND (signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39;
+       OR signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39;)
+GROUP BY 1, 2, 3 ORDER BY 1, 2
+</pre>
+<p class="meta">rows: 120 · result: results/h3_android_did.csv
+ · flagged: unbounded-window, underpowered-risk</p>
+
+<h3><code>h4_spend.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>SELECT CASE WHEN date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+            WHEN date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+       channel, count(*) AS n_days, sum(spend) AS total_spend, avg(spend) AS mean_daily_spend
+FROM marketing
+WHERE date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+GROUP BY 1, 2 HAVING win IS NOT NULL ORDER BY 2, 1
+</pre>
+<p class="meta">rows: 4 · result: results/h4_spend.csv
+ · flagged: unbounded-window, underpowered-risk</p>
+
+<h3><code>hprior_pre_post.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date, u.platform, u.acquisition_source,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date, u.platform, u.acquisition_source
+)
+SELECT platform,
+       CASE WHEN signup_date BETWEEN DATE &#39;2025-03-08&#39; AND DATE &#39;2025-03-21&#39; THEN &#39;pre&#39;
+            WHEN signup_date BETWEEN DATE &#39;2025-04-04&#39; AND DATE &#39;2025-04-17&#39; THEN &#39;post&#39; END AS grp,
+       count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate
+FROM ret
+WHERE platform IN (&#39;android&#39;, &#39;web&#39;)
+  AND (signup_date BETWEEN DATE &#39;2025-03-08&#39; AND DATE &#39;2025-03-21&#39;
+       OR signup_date BETWEEN DATE &#39;2025-04-04&#39; AND DATE &#39;2025-04-17&#39;)
+GROUP BY 1, 2 ORDER BY 1, 2
+</pre>
+<p class="meta">rows: 4 · result: results/hprior_pre_post.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>q0_move.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date,
+    CASE WHEN u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+         WHEN u.signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date
+)
+SELECT win, count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate
+FROM ret WHERE win IS NOT NULL GROUP BY win ORDER BY win
+</pre>
+<p class="meta">rows: 2 · result: results/q0_move.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>q0_move_by_platform.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source,
+    CASE WHEN u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+         WHEN u.signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+    MAX(CASE WHEN e.event_name = &#39;session_start&#39;
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.signup_date, u.platform, u.country, u.acquisition_source
+)
+SELECT win, platform, count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate
+FROM ret WHERE win IS NOT NULL GROUP BY win, platform ORDER BY platform, win
+</pre>
+<p class="meta">rows: 6 · result: results/q0_move_by_platform.csv
+ · flagged: unbounded-window</p>
+
+<h3><code>x1_exploratory_renamed_event.sql</code> <span class="guard-warn">[guard: warn]</span></h3>
+<pre>WITH ret AS (
+  SELECT u.user_id, u.platform,
+    CASE WHEN u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-03-10&#39; THEN &#39;baseline&#39;
+         WHEN u.signup_date BETWEEN DATE &#39;2025-03-23&#39; AND DATE &#39;2025-04-21&#39; THEN &#39;focus&#39; END AS win,
+    MAX(CASE WHEN e.event_name IN (&#39;session_start&#39;, &#39;session_started&#39;)
+              AND date_diff(&#39;day&#39;, u.signup_date, CAST(e.event_ts AS DATE)) BETWEEN 7 AND 13
+             THEN 1 ELSE 0 END) AS d7
+  FROM users u LEFT JOIN events e ON e.user_id = u.user_id
+  WHERE u.signup_date BETWEEN DATE &#39;2025-02-09&#39; AND DATE &#39;2025-04-21&#39;
+  GROUP BY u.user_id, u.platform, u.signup_date
+)
+SELECT win, count(*) AS n, sum(d7) AS retained, avg(d7) AS d7_rate,
+       sum(CASE WHEN platform = &#39;ios&#39; THEN d7 END) AS ios_retained,
+       sum(CASE WHEN platform = &#39;ios&#39; THEN 1 ELSE 0 END) AS ios_n
+FROM ret WHERE win IS NOT NULL GROUP BY win ORDER BY win
+</pre>
+<p class="meta">rows: 2 · result: results/x1_exploratory_renamed_event.csv
+ · flagged: unbounded-window</p>
+
+
+<p class="meta">All queries executed read-only via core/db.py. Aggregates only — no
+row-level user data (constitution rule 7).</p>
+</body>
+</html>

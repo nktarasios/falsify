@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "case": "demo-run-2026-10-09",
+  "sqlfile": "queries/h1_ios_session_index_v2.sql",
+  "sql": "WITH grid AS (\n  SELECT CAST(d AS DATE) AS day, g.is_ios\n  FROM range(TIMESTAMP '2025-03-22', TIMESTAMP '2025-04-22', INTERVAL 1 DAY) t(d)\n  CROSS JOIN (SELECT 0 AS is_ios UNION ALL SELECT 1) g\n),\ndaily AS (\n  SELECT CAST(event_ts AS DATE) AS day,\n         CASE WHEN platform = 'ios' THEN 1 ELSE 0 END AS is_ios,\n         count(*) AS n_sessions\n  FROM events\n  WHERE event_name = 'session_start'\n    AND event_ts >= TIMESTAMP '2025-03-22' AND event_ts < TIMESTAMP '2025-04-22'\n  GROUP BY 1, 2\n),\nfilled AS (\n  SELECT g.day, g.is_ios, coalesce(d.n_sessions, 0) AS n_sessions\n  FROM grid g LEFT JOIN daily d ON d.day = g.day AND d.is_ios = g.is_ios\n),\npre AS (\n  SELECT is_ios, avg(n_sessions) AS pre_mean FROM filled\n  WHERE day BETWEEN DATE '2025-03-22' AND DATE '2025-04-04' GROUP BY is_ios\n)\nSELECT f.day, f.is_ios, f.n_sessions, f.n_sessions / p.pre_mean AS idx,\n       CASE WHEN f.day BETWEEN DATE '2025-03-22' AND DATE '2025-04-04' THEN 0\n            WHEN f.day BETWEEN DATE '2025-04-05' AND DATE '2025-04-18' THEN 1 END AS post\nFROM filled f JOIN pre p ON p.is_ios = f.is_ios\nWHERE f.day BETWEEN DATE '2025-03-22' AND DATE '2025-04-21'\nORDER BY f.day, f.is_ios\n",
+  "dialect": "duckdb",
+  "executed_at": "2026-10-09T23:23:56.604498+00:00",
+  "row_count": 62,
+  "columns": [
+    {
+      "name": "day",
+      "dtype": "date"
+    },
+    {
+      "name": "is_ios",
+      "dtype": "int32"
+    },
+    {
+      "name": "n_sessions",
+      "dtype": "int64"
+    },
+    {
+      "name": "idx",
+      "dtype": "float64"
+    },
+    {
+      "name": "post",
+      "dtype": "Int32"
+    }
+  ],
+  "source_row_counts": {
+    "events": 93574
+  },
+  "checks": [
+    {
+      "id": "G-1",
+      "name": "single-statement",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-2",
+      "name": "select-only",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-3",
+      "name": "no-write-nodes",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-4",
+      "name": "no-star-projection",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-5",
+      "name": "redaction",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-6",
+      "name": "unbounded-window",
+      "status": "warn",
+      "detail": "no date predicate; focus window not constrained"
+    },
+    {
+      "id": "G-7",
+      "name": "join-fanout",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-8",
+      "name": "underpowered-risk",
+      "status": "warn",
+      "detail": "denominator < 50: n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0, n_sessions=0"
+    },
+    {
+      "id": "G-9",
+      "name": "nulls",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "id": "G-12",
+      "name": "size",
+      "status": "pass",
+      "detail": ""
+    }
+  ],
+  "status": "warn"
+}
